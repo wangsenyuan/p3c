@@ -19,18 +19,18 @@ public User getUsers(String type, Integer... ids) {...}
 7. 【强制】所有的相同类型的包装类对象之间值的比较，全部使用equals方法比较。 
 <br><span style="color:orange">说明</span>：对于Integer var = ?  在-128至127范围内的赋值，Integer对象是在IntegerCache.cache产生，会复用已有对象，这个区间内的Integer值可以直接使用==进行判断，但是这个区间之外的所有数据，都会在堆上产生，并不会复用已有对象，这是一个大坑，推荐使用equals方法进行判断。 
 8. 关于基本数据类型与包装数据类型的使用标准如下：
-<br>1） 【强制】所有的POJO类属性必须使用包装数据类型。
-<br>2） 【强制】RPC方法的返回值和参数必须使用包装数据类型。
+<br>1） 【推荐】所有的Domain类属性使用包装数据类型。
+<br>2） 【强制】ICE RPC方法的返回值和参数必须使用原始数据类型。
 <br>3） 【推荐】所有的局部变量使用基本数据类型。
 <br><span style="color:orange">说明</span>：POJO类属性没有初值是提醒使用者在需要使用时，必须自己显式地进行赋值，任何NPE问题，或者入库检查，都由使用者来保证。
 <br><span style="color:green">正例</span>：数据库的查询结果可能是null，因为自动拆箱，用基本数据类型接收有NPE风险。
 <br><span style="color:red">反例</span>：比如显示成交总额涨跌情况，即正负x%，x为基本数据类型，调用的RPC服务，调用不成功时，返回的是默认值，页面显示为0%，这是不合理的，应该显示成中划线。所以包装数据类型的null值，能够表示额外的信息，如：远程调用失败，异常退出。 
 9. 【强制】定义DO/DTO/VO等POJO类时，不要设定任何属性**默认值**。
 <br><span style="color:red">反例</span>：POJO类的gmtCreate默认值为new Date();但是这个属性在数据提取时并没有置入具体值，在更新其它字段时又附带更新了此字段，导致创建时间被修改成当前时间。 
-10. 【强制】序列化类新增属性时，请不要修改serialVersionUID字段，避免反序列失败；如果完全不兼容升级，避免反序列化混乱，那么请修改serialVersionUID值。 
+10. 【强制】序列化类新增属性时，请不要修改serialVersionUID字段，避免反序列失败；如果完全不兼容升级，避免反序列化混乱，那么请修改serialVersionUID值。 推荐使用使用JSON，protocbuf等方式代替java序列化；
 <br><span style="color:orange">说明</span>：注意serialVersionUID不一致会抛出序列化运行时异常。 
 11. 【强制】构造方法里面禁止加入任何业务逻辑，如果有初始化逻辑，请放在init方法中。 
-12. 【强制】POJO类必须写toString方法。使用IDE中的工具：source> generate toString时，如果继承了另一个POJO类，注意在前面加一下super.toString。 <br><span style="color:orange">说明</span>：在方法执行抛出异常时，可以直接调用POJO的toString()方法打印其属性值，便于排查问题。 
+12. 【推荐】POJO类必须写toString方法。使用IDE中的工具：source> generate toString时，如果继承了另一个POJO类，注意在前面加一下super.toString。 <br><span style="color:orange">说明</span>：在方法执行抛出异常时，可以直接调用POJO的toString()方法打印其属性值，便于排查问题。 toString应该包括关键信息。尽量不包括集合字段。如果在toString递归调用了其他字段的toString，要清楚该调用的影响，包括性能，必要性；如果是树形结构，不能调用parent的toString方法；
 13. 【推荐】使用索引访问用String的split方法得到的数组时，需做最后一个分隔符后有无内容的检查，否则会有抛IndexOutOfBoundsException的风险。 
 <br><span style="color:orange">说明</span>：
 ```
@@ -66,7 +66,7 @@ String[] ary = str.split(",");
 <br>3） 不允许被重写的方法，如：POJO类的setter方法。
 <br>4） 不允许运行过程中重新赋值的局部变量。
 <br>5） 避免上下文重复使用一个变量，使用final描述可以强制重新定义一个变量，方便更好地进行重构。 
-19. 【推荐】慎用Object的clone方法来拷贝对象。 
+19. 【推荐】慎用Object的clone方法来拷贝对象。 避免使用反射的方式，进行对象拷贝；
 <br><span style="color:orange">说明</span>：对象的clone方法默认是浅拷贝，若想实现深拷贝需要重写clone方法实现属性对象的拷贝。 
 20. 【推荐】类成员与方法访问控制从严：
 <br>1） 如果不允许外部直接通过new来创建对象，那么构造方法必须是private。
